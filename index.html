@@ -874,7 +874,7 @@
                 document.getElementById('status').textContent = 'Too much change! You gave'  + difference.toFixed(2) + ' extra. Time: ' + formatTime(timeTaken);
                 document.getElementById('status').className = 'status error';
             } else {
-                document.getElementById('status').textContent = 'Not enough change! You need  + Math.abs(difference).toFixed(2)' + ' more. Time: ' + formatTime(timeTaken);
+                document.getElementById('status').textContent = 'Not enough change! You need ' + Math.abs(difference).toFixed(2) + ' more. Time: ' + formatTime(timeTaken);
                 document.getElementById('status').className = 'status error';
             }
             
