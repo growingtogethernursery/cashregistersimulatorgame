@@ -1,0 +1,1066 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Cash Register Simulator</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Courier New', monospace;
+            background-color: white;
+            color: black;
+            padding: 20px;
+        }
+
+        .game-container {
+            max-width: 900px;
+            margin: 0 auto;
+        }
+
+        .header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+
+        .score-display {
+            text-align: right;
+            font-size: 14px;
+            line-height: 1.3;
+        }
+
+        .score-big {
+            font-size: 24px;
+            font-weight: bold;
+        }
+
+        .transaction-area {
+            display: flex;
+            justify-content: space-between;
+            border: 2px solid black;
+            padding: 20px;
+            margin-bottom: 20px;
+            min-height: 150px;
+        }
+
+        .left-info {
+            flex: 1;
+            font-size: 18px;
+            line-height: 1.5;
+        }
+
+        .transaction-stats {
+            font-size: 14px;
+            margin-top: 10px;
+            color: #666;
+        }
+
+        .right-bills {
+            flex: 1;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            position: relative;
+        }
+
+        .bill-stack {
+            position: relative;
+            width: 140px;
+            height: 80px;
+        }
+
+        .customer-bill {
+            position: absolute;
+            width: 140px;
+            height: 80px;
+            border: 2px solid black;
+            background: white;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+            padding: 5px;
+            font-size: 12px;
+            font-weight: bold;
+        }
+
+        .bill-corners {
+            display: flex;
+            justify-content: space-between;
+        }
+
+        .bill-center {
+            text-align: center;
+            font-size: 10px;
+        }
+
+        .timer {
+            text-align: center;
+            font-size: 20px;
+            font-weight: bold;
+            margin: 20px 0;
+            padding: 10px;
+            border: 2px solid black;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .timer-left {
+            font-size: 16px;
+        }
+
+        .cash-drawer {
+            border: 2px solid black;
+            padding: 20px;
+        }
+
+        .drawer-title {
+            text-align: center;
+            font-size: 20px;
+            font-weight: bold;
+            margin-bottom: 20px;
+        }
+
+        .bills-section, .coins-section {
+            margin-bottom: 20px;
+        }
+
+        .section-title {
+            font-weight: bold;
+            margin-bottom: 10px;
+        }
+
+        .bills-container, .coins-container {
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+        }
+
+        .bill, .coin {
+            cursor: pointer;
+            transition: all 0.2s;
+            text-align: center;
+            border: 2px solid black;
+            background: white;
+            position: relative;
+        }
+
+        .bill:hover, .coin:hover {
+            background: #f0f0f0;
+        }
+
+        .bill {
+            width: 120px;
+            height: 60px;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+            padding: 5px;
+            font-size: 10px;
+        }
+
+        .coin {
+            width: 60px;
+            height: 60px;
+            border-radius: 50%;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            font-size: 12px;
+            font-weight: bold;
+            line-height: 1.2;
+        }
+
+        .click-count {
+            position: absolute;
+            top: -8px;
+            right: -8px;
+            background: black;
+            color: white;
+            border-radius: 50%;
+            width: 20px;
+            height: 20px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 12px;
+            font-weight: bold;
+        }
+
+        .selected-change {
+            border: 2px solid black;
+            padding: 10px;
+            margin-top: 10px;
+            min-height: 50px;
+        }
+
+        .change-title {
+            font-weight: bold;
+            margin-bottom: 5px;
+        }
+
+        .change-items {
+            display: flex;
+            gap: 5px;
+            flex-wrap: wrap;
+        }
+
+        .change-item {
+            background: #f0f0f0;
+            padding: 2px 5px;
+            border: 1px solid black;
+            font-size: 12px;
+            cursor: pointer;
+        }
+
+        .change-item:hover {
+            background: #e0e0e0;
+        }
+
+        .controls {
+            margin-top: 20px;
+            text-align: center;
+        }
+
+        .btn {
+            padding: 10px 20px;
+            margin: 0 5px;
+            border: 2px solid black;
+            background: white;
+            cursor: pointer;
+            font-family: inherit;
+            font-size: 16px;
+        }
+
+        .btn:hover {
+            background: #f0f0f0;
+        }
+
+        .status {
+            margin-top: 20px;
+            padding: 10px;
+            text-align: center;
+            font-weight: bold;
+            min-height: 40px;
+        }
+
+        .success {
+            background: #e0e0e0;
+        }
+
+        .error {
+            background: #d0d0d0;
+        }
+
+        .transaction-history {
+            margin-top: 20px;
+            border: 2px solid black;
+            padding: 20px;
+            max-height: 250px;
+            overflow-y: auto;
+        }
+
+        .history-title {
+            font-weight: bold;
+            margin-bottom: 10px;
+            text-align: center;
+        }
+
+        .transaction-item {
+            padding: 8px;
+            border-bottom: 1px solid black;
+            font-size: 12px;
+            margin-bottom: 5px;
+        }
+
+        .transaction-item:last-child {
+            border-bottom: none;
+        }
+
+        .transaction-success {
+            background: #e0e0e0;
+        }
+
+        .transaction-error {
+            background: #d0d0d0;
+        }
+
+        .transaction-main {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 3px;
+        }
+
+        .transaction-details {
+            font-size: 11px;
+            color: #555;
+        }
+
+        .stats-panel {
+            display: flex;
+            gap: 20px;
+            margin-top: 20px;
+        }
+
+        .stats-section {
+            flex: 1;
+            border: 2px solid black;
+            padding: 15px;
+        }
+
+        .stats-title {
+            font-weight: bold;
+            margin-bottom: 10px;
+            text-align: center;
+        }
+
+        .stats-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 8px;
+            font-size: 12px;
+        }
+
+        .stat-item {
+            display: flex;
+            justify-content: space-between;
+        }
+
+        .achievements {
+            margin-top: 15px;
+        }
+
+        .achievement {
+            font-size: 11px;
+            padding: 2px 5px;
+            margin: 2px 0;
+            border-radius: 3px;
+        }
+
+        .achievement-unlocked {
+            background: #e0e0e0;
+        }
+
+        .achievement-locked {
+            background: #f5f5f5;
+            color: #999;
+        }
+    </style>
+</head>
+<body>
+    <div class="game-container">
+        <div class="header">
+            <h1>CASH REGISTER SIMULATOR</h1>
+            <div class="score-display">
+                <div class="score-big">Score: <span id="current-score">0</span></div>
+                <div>Total: <span id="total-score">0</span></div>
+                <div>Streak: <span id="streak">0</span></div>
+            </div>
+        </div>
+        
+        <div class="timer">
+            <div class="timer-left">
+                <div>Items Used: <span id="items-used">0</span></div>
+                <div>Avg Selection: <span id="avg-selection">0.0s</span></div>
+            </div>
+            <div>Time: <span id="timer">0:00</span></div>
+        </div>
+        
+        <div class="transaction-area">
+            <div class="left-info">
+                <div>Total Due: $<span id="total-due">0.00</span></div>
+                <div>Bill Received: $<span id="bill-received">0.00</span></div>
+                <div>Change Owed: $<span id="change-owed">0.00</span></div>
+                <div class="transaction-stats">
+                    <div>Efficiency: <span id="efficiency">100%</span></div>
+                    <div>Last Selection: <span id="last-selection">0.0s</span></div>
+                </div>
+            </div>
+            <div class="right-bills">
+                <div class="bill-stack">
+                    <div class="customer-bill" id="customer-bill" style="display: none;">
+                        <div class="bill-corners">
+                            <span class="bill-amount">$0</span>
+                            <span class="bill-amount">$0</span>
+                        </div>
+                        <div class="bill-center">
+                            <div class="bill-president">PRESIDENT</div>
+                        </div>
+                        <div class="bill-corners">
+                            <span class="bill-amount">$0</span>
+                            <span class="bill-amount">$0</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="cash-drawer">
+            <div class="drawer-title">CASH DRAWER</div>
+            
+            <div class="bills-section">
+                <div class="section-title">BILLS</div>
+                <div class="bills-container">
+                    <div class="bill" onclick="selectMoney(100, 'bill')" data-value="100">
+                        <div class="bill-corners">
+                            <span>$100</span>
+                            <span>$100</span>
+                        </div>
+                        <div class="bill-center">FRANKLIN</div>
+                        <div class="bill-corners">
+                            <span>$100</span>
+                            <span>$100</span>
+                        </div>
+                        <div class="click-count" id="count-100" style="display: none;">0</div>
+                    </div>
+                    <div class="bill" onclick="selectMoney(50, 'bill')" data-value="50">
+                        <div class="bill-corners">
+                            <span>$50</span>
+                            <span>$50</span>
+                        </div>
+                        <div class="bill-center">GRANT</div>
+                        <div class="bill-corners">
+                            <span>$50</span>
+                            <span>$50</span>
+                        </div>
+                        <div class="click-count" id="count-50" style="display: none;">0</div>
+                    </div>
+                    <div class="bill" onclick="selectMoney(20, 'bill')" data-value="20">
+                        <div class="bill-corners">
+                            <span>$20</span>
+                            <span>$20</span>
+                        </div>
+                        <div class="bill-center">JACKSON</div>
+                        <div class="bill-corners">
+                            <span>$20</span>
+                            <span>$20</span>
+                        </div>
+                        <div class="click-count" id="count-20" style="display: none;">0</div>
+                    </div>
+                    <div class="bill" onclick="selectMoney(10, 'bill')" data-value="10">
+                        <div class="bill-corners">
+                            <span>$10</span>
+                            <span>$10</span>
+                        </div>
+                        <div class="bill-center">HAMILTON</div>
+                        <div class="bill-corners">
+                            <span>$10</span>
+                            <span>$10</span>
+                        </div>
+                        <div class="click-count" id="count-10" style="display: none;">0</div>
+                    </div>
+                    <div class="bill" onclick="selectMoney(5, 'bill')" data-value="5">
+                        <div class="bill-corners">
+                            <span>$5</span>
+                            <span>$5</span>
+                        </div>
+                        <div class="bill-center">LINCOLN</div>
+                        <div class="bill-corners">
+                            <span>$5</span>
+                            <span>$5</span>
+                        </div>
+                        <div class="click-count" id="count-5" style="display: none;">0</div>
+                    </div>
+                    <div class="bill" onclick="selectMoney(1, 'bill')" data-value="1">
+                        <div class="bill-corners">
+                            <span>$1</span>
+                            <span>$1</span>
+                        </div>
+                        <div class="bill-center">WASHINGTON</div>
+                        <div class="bill-corners">
+                            <span>$1</span>
+                            <span>$1</span>
+                        </div>
+                        <div class="click-count" id="count-1" style="display: none;">0</div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="coins-section">
+                <div class="section-title">COINS</div>
+                <div class="coins-container">
+                    <div class="coin" onclick="selectMoney(0.25, 'coin')" data-value="0.25">
+                        <div>$0.25</div>
+                        <div>QUARTER</div>
+                        <div class="click-count" id="count-0.25" style="display: none;">0</div>
+                    </div>
+                    <div class="coin" onclick="selectMoney(0.10, 'coin')" data-value="0.10">
+                        <div>$0.10</div>
+                        <div>DIME</div>
+                        <div class="click-count" id="count-0.1" style="display: none;">0</div>
+                    </div>
+                    <div class="coin" onclick="selectMoney(0.05, 'coin')" data-value="0.05">
+                        <div>$0.05</div>
+                        <div>NICKEL</div>
+                        <div class="click-count" id="count-0.05" style="display: none;">0</div>
+                    </div>
+                    <div class="coin" onclick="selectMoney(0.01, 'coin')" data-value="0.01">
+                        <div>$0.01</div>
+                        <div>PENNY</div>
+                        <div class="click-count" id="count-0.01" style="display: none;">0</div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="selected-change">
+                <div class="change-title">CHANGE SELECTED:</div>
+                <div class="change-items" id="change-items"></div>
+                <div style="margin-top: 10px;">Total Selected: $<span id="total-selected">0.00</span></div>
+            </div>
+        </div>
+
+        <div class="controls">
+            <button class="btn" onclick="checkChange()">GIVE CHANGE</button>
+            <button class="btn" onclick="clearSelected()">CLEAR</button>
+            <button class="btn" onclick="newTransaction()">NEW CUSTOMER</button>
+            <button class="btn" onclick="resetStats()">RESET STATS</button>
+        </div>
+
+        <div class="status" id="status">Click "NEW CUSTOMER" to start!</div>
+
+        <div class="stats-panel">
+            <div class="stats-section">
+                <div class="stats-title">SESSION STATS</div>
+                <div class="stats-grid">
+                    <div class="stat-item"><span>Games Played:</span> <span id="games-played">0</span></div>
+                    <div class="stat-item"><span>Correct:</span> <span id="games-correct">0</span></div>
+                    <div class="stat-item"><span>Accuracy:</span> <span id="accuracy">0%</span></div>
+                    <div class="stat-item"><span>Avg Score:</span> <span id="avg-score">0</span></div>
+                    <div class="stat-item"><span>Best Score:</span> <span id="best-score">0</span></div>
+                    <div class="stat-item"><span>Best Time:</span> <span id="best-time">0:00</span></div>
+                    <div class="stat-item"><span>Avg Time:</span> <span id="avg-time">0:00</span></div>
+                    <div class="stat-item"><span>Best Streak:</span> <span id="best-streak">0</span></div>
+                </div>
+                <div class="achievements">
+                    <div class="stats-title">ACHIEVEMENTS</div>
+                    <div id="achievements-list"></div>
+                </div>
+            </div>
+            
+            <div class="stats-section">
+                <div class="stats-title">TRANSACTION HISTORY</div>
+                <div id="history-list">
+                    <div style="text-align: center; font-style: italic;">No transactions yet</div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let currentTransaction = {
+            total: 0,
+            billReceived: 0,
+            changeOwed: 0,
+            startTime: null,
+            selectionTimes: [],
+            selectedItems: [],
+            lastSelectionTime: null
+        };
+
+        let selectedChange = [];
+        let totalSelected = 0;
+        let timerInterval = null;
+        let itemClickCounts = {};
+
+        // Game state and statistics
+        let gameState = {
+            currentScore: 0,
+            totalScore: 0,
+            currentStreak: 0,
+            bestStreak: 0,
+            gamesPlayed: 0,
+            gamesCorrect: 0,
+            totalTime: 0,
+            bestTime: Infinity,
+            bestScore: 0,
+            transactions: [],
+            achievements: {
+                'First Success': false,
+                'Speed Demon': false,
+                'Efficiency Expert': false,
+                'Streak Master': false,
+                'Perfect Game': false,
+                'Lightning Fast': false,
+                'Steady Hand': false
+            }
+        };
+
+        const billPresidents = {
+            100: 'FRANKLIN',
+            50: 'GRANT',
+            20: 'JACKSON',
+            10: 'HAMILTON',
+            5: 'LINCOLN',
+            1: 'WASHINGTON'
+        };
+
+        const bills = [100, 50, 20, 10, 5, 1];
+        const coins = [0.25, 0.10, 0.05, 0.01];
+
+        // Initialize the game
+        function initGame() {
+            updateStatsDisplay();
+            updateAchievements();
+        }
+
+        function newTransaction() {
+            currentTransaction.total = Math.round((Math.random() * 49 + 1) * 100) / 100;
+            
+            const possibleBills = bills.filter(bill => bill > currentTransaction.total);
+            currentTransaction.billReceived = possibleBills[Math.floor(Math.random() * possibleBills.length)];
+            
+            currentTransaction.changeOwed = Math.round((currentTransaction.billReceived - currentTransaction.total) * 100) / 100;
+            
+            currentTransaction.startTime = Date.now();
+            currentTransaction.selectionTimes = [];
+            currentTransaction.selectedItems = [];
+            currentTransaction.lastSelectionTime = null;
+            
+            startTimer();
+            
+            document.getElementById('total-due').textContent = currentTransaction.total.toFixed(2);
+            document.getElementById('bill-received').textContent = currentTransaction.billReceived.toFixed(2);
+            document.getElementById('change-owed').textContent = currentTransaction.changeOwed.toFixed(2);
+            
+            const customerBill = document.getElementById('customer-bill');
+            customerBill.style.display = 'block';
+            customerBill.querySelectorAll('.bill-amount').forEach(span => {
+                span.textContent = '$' + currentTransaction.billReceived;
+            });
+            customerBill.querySelector('.bill-president').textContent = billPresidents[currentTransaction.billReceived];
+            
+            clearSelected();
+            
+            document.getElementById('status').textContent = 'Make change for the customer!';
+            document.getElementById('status').className = 'status';
+        }
+
+        function startTimer() {
+            if (timerInterval) clearInterval(timerInterval);
+            
+            timerInterval = setInterval(() => {
+                const elapsed = Math.floor((Date.now() - currentTransaction.startTime) / 1000);
+                const minutes = Math.floor(elapsed / 60);
+                const seconds = elapsed % 60;
+                document.getElementById('timer').textContent = minutes + ':' + seconds.toString().padStart(2, '0');
+            }, 1000);
+        }
+
+        function stopTimer() {
+            if (timerInterval) {
+                clearInterval(timerInterval);
+                timerInterval = null;
+            }
+        }
+
+        function getElapsedTime() {
+            if (!currentTransaction.startTime) return 0;
+            return Math.floor((Date.now() - currentTransaction.startTime) / 1000);
+        }
+
+        function formatTime(seconds) {
+            const minutes = Math.floor(seconds / 60);
+            const secs = seconds % 60;
+            return minutes + ':' + secs.toString().padStart(2, '0');
+        }
+
+        function selectMoney(value, type) {
+            const now = Date.now();
+            const timeSinceStart = now - currentTransaction.startTime;
+            const timeSinceLastSelection = currentTransaction.lastSelectionTime ? 
+                (now - currentTransaction.lastSelectionTime) / 1000 : 0;
+            
+            currentTransaction.selectionTimes.push(timeSinceStart);
+            currentTransaction.lastSelectionTime = now;
+            
+            selectedChange.push({value: value, type: type});
+            currentTransaction.selectedItems.push({value: value, type: type});
+            totalSelected = Math.round((totalSelected + value) * 100) / 100;
+            
+            // Update click counts
+            const key = value.toString();
+            itemClickCounts[key] = (itemClickCounts[key] || 0) + 1;
+            document.getElementById('count-' + key).textContent = itemClickCounts[key];
+            document.getElementById('count-' + key).style.display = 'flex';
+            
+            updateChangeDisplay();
+            updateTransactionStats();
+            
+            if (timeSinceLastSelection > 0) {
+                document.getElementById('last-selection').textContent = timeSinceLastSelection.toFixed(1) + 's';
+            }
+        }
+
+        function updateChangeDisplay() {
+            const changeItems = document.getElementById('change-items');
+            changeItems.innerHTML = '';
+            
+            selectedChange.forEach((item, index) => {
+                const span = document.createElement('span');
+                span.className = 'change-item';
+                span.textContent = item.type === 'bill' ? '$' + item.value.toFixed(0) : '$' + item.value.toFixed(2);
+                span.onclick = () => removeChange(index);
+                changeItems.appendChild(span);
+            });
+            
+            document.getElementById('total-selected').textContent = totalSelected.toFixed(2);
+        }
+
+        function updateTransactionStats() {
+            document.getElementById('items-used').textContent = selectedChange.length;
+            
+            const optimalItems = calculateOptimalItems(currentTransaction.changeOwed);
+            const efficiency = selectedChange.length > 0 ? Math.round((optimalItems / selectedChange.length) * 100) : 100;
+            document.getElementById('efficiency').textContent = efficiency + '%';
+            
+            if (currentTransaction.selectionTimes.length > 0) {
+                const avgTime = currentTransaction.selectionTimes.reduce((sum, time, index) => {
+                    if (index === 0) return 0;
+                    return sum + (currentTransaction.selectionTimes[index] - currentTransaction.selectionTimes[index - 1]);
+                }, 0) / Math.max(1, currentTransaction.selectionTimes.length - 1);
+                
+                document.getElementById('avg-selection').textContent = (avgTime / 1000).toFixed(1) + 's';
+            }
+        }
+
+        function calculateOptimalItems(changeAmount) {
+            let remaining = Math.round(changeAmount * 100);
+            let count = 0;
+            const denominations = [10000, 5000, 2000, 1000, 500, 100, 25, 10, 5, 1];
+            
+            for (let denom of denominations) {
+                count += Math.floor(remaining / denom);
+                remaining %= denom;
+            }
+            
+            return count;
+        }
+
+        function calculateScore(transaction) {
+            if (!transaction.isCorrect) return 0;
+            
+            let score = 100;
+            
+            // Time bonus/penalty
+            const timeBonus = Math.max(0, 30 - transaction.timeTaken);
+            score += timeBonus;
+            
+            // Efficiency bonus
+            const optimalItems = calculateOptimalItems(transaction.changeOwed);
+            const efficiencyRatio = optimalItems / transaction.itemsUsed;
+            score = Math.round(score * efficiencyRatio);
+            
+            // Selection rhythm bonus
+            if (transaction.selectionTimes.length > 1) {
+                const intervals = [];
+                for (let i = 1; i < transaction.selectionTimes.length; i++) {
+                    intervals.push(transaction.selectionTimes[i] - transaction.selectionTimes[i - 1]);
+                }
+                const avgInterval = intervals.reduce((a, b) => a + b) / intervals.length;
+                if (avgInterval < 3000 && avgInterval > 500) { // Sweet spot: 0.5-3 seconds
+                    score += 10;
+                }
+            }
+            
+            // Streak multiplier
+            score = Math.round(score * (1 + gameState.currentStreak * 0.1));
+            
+            return Math.max(0, score);
+        }
+
+        function removeChange(index) {
+            const item = selectedChange[index];
+            totalSelected = Math.round((totalSelected - item.value) * 100) / 100;
+            selectedChange.splice(index, 1);
+            
+            // Update click counts
+            const key = item.value.toString();
+            itemClickCounts[key] = Math.max(0, (itemClickCounts[key] || 0) - 1);
+            if (itemClickCounts[key] === 0) {
+                document.getElementById('count-' + key).style.display = 'none';
+            } else {
+                document.getElementById('count-' + key).textContent = itemClickCounts[key + ''];
+            }
+            
+            // Remove from current transaction
+            currentTransaction.selectedItems.splice(index, 1);
+            
+            updateChangeDisplay();
+            updateTransactionStats();
+        }
+
+        function clearSelected() {
+            selectedChange = [];
+            totalSelected = 0;
+            itemClickCounts = {};
+            
+            // Hide all click counts
+            document.querySelectorAll('.click-count').forEach(el => el.style.display = 'none');
+            
+            updateChangeDisplay();
+            updateTransactionStats();
+        }
+
+        function checkChange() {
+            if (selectedChange.length === 0) {
+                document.getElementById('status').textContent = 'Select some bills or coins first!';
+                document.getElementById('status').className = 'status error';
+                return;
+            }
+            
+            const timeTaken = getElapsedTime();
+            stopTimer();
+            
+            const difference = Math.round((totalSelected - currentTransaction.changeOwed) * 100) / 100;
+            const isCorrect = difference === 0;
+            
+            // Create transaction record
+            const transaction = {
+                total: currentTransaction.total,
+                billReceived: currentTransaction.billReceived,
+                changeOwed: currentTransaction.changeOwed,
+                timeTaken: timeTaken,
+                isCorrect: isCorrect,
+                itemsUsed: selectedChange.length,
+                selectionTimes: [...currentTransaction.selectionTimes],
+                selectedItems: [...currentTransaction.selectedItems],
+                timestamp: new Date().toLocaleTimeString(),
+                score: 0
+            };
+            
+            // Calculate score
+            transaction.score = calculateScore(transaction);
+            
+            // Update game state
+            gameState.gamesPlayed++;
+            gameState.totalTime += timeTaken;
+            
+            if (isCorrect) {
+                gameState.gamesCorrect++;
+                gameState.currentStreak++;
+                gameState.bestStreak = Math.max(gameState.bestStreak, gameState.currentStreak);
+                gameState.bestTime = Math.min(gameState.bestTime, timeTaken);
+                
+                gameState.currentScore = transaction.score;
+                gameState.totalScore += transaction.score;
+                gameState.bestScore = Math.max(gameState.bestScore, transaction.score);
+            } else {
+                gameState.currentStreak = 0;
+                gameState.currentScore = 0;
+            }
+            
+            // Add to transaction history
+            gameState.transactions.unshift(transaction);
+            if (gameState.transactions.length > 20) {
+                gameState.transactions.pop();
+            }
+            
+            // Display result
+            if (isCorrect) {
+                document.getElementById('status').textContent = 'CORRECT! Score: ' + transaction.score + ' (Time: ' + formatTime(timeTaken) + ')';
+                document.getElementById('status').className = 'status success';
+            } else if (difference > 0) {
+                document.getElementById('status').textContent = 'Too much change! You gave'  + difference.toFixed(2) + ' extra. Time: ' + formatTime(timeTaken);
+                document.getElementById('status').className = 'status error';
+            } else {
+                document.getElementById('status').textContent = 'Not enough change! You need  + Math.abs(difference).toFixed(2)' + ' more. Time: ' + formatTime(timeTaken);
+                document.getElementById('status').className = 'status error';
+            }
+            
+            updateStatsDisplay();
+            updateHistoryDisplay();
+            checkAchievements();
+            updateAchievements();
+        }
+
+        function updateStatsDisplay() {
+            document.getElementById('current-score').textContent = gameState.currentScore;
+            document.getElementById('total-score').textContent = gameState.totalScore;
+            document.getElementById('streak').textContent = gameState.currentStreak;
+            
+            document.getElementById('games-played').textContent = gameState.gamesPlayed;
+            document.getElementById('games-correct').textContent = gameState.gamesCorrect;
+            
+            const accuracy = gameState.gamesPlayed > 0 ? Math.round((gameState.gamesCorrect / gameState.gamesPlayed) * 100) : 0;
+            document.getElementById('accuracy').textContent = accuracy + '%';
+            
+            const avgScore = gameState.gamesCorrect > 0 ? Math.round(gameState.totalScore / gameState.gamesCorrect) : 0;
+            document.getElementById('avg-score').textContent = avgScore;
+            
+            document.getElementById('best-score').textContent = gameState.bestScore;
+            document.getElementById('best-streak').textContent = gameState.bestStreak;
+            
+            const avgTime = gameState.gamesPlayed > 0 ? Math.round(gameState.totalTime / gameState.gamesPlayed) : 0;
+            document.getElementById('avg-time').textContent = formatTime(avgTime);
+            
+            const bestTime = gameState.bestTime === Infinity ? 0 : gameState.bestTime;
+            document.getElementById('best-time').textContent = formatTime(bestTime);
+        }
+
+        function updateHistoryDisplay() {
+            const historyList = document.getElementById('history-list');
+            historyList.innerHTML = '';
+            
+            if (gameState.transactions.length === 0) {
+                historyList.innerHTML = '<div style="text-align: center; font-style: italic;">No transactions yet</div>';
+                return;
+            }
+            
+            gameState.transactions.forEach((transaction, index) => {
+                const item = document.createElement('div');
+                item.className = 'transaction-item ' + (transaction.isCorrect ? 'transaction-success' : 'transaction-error');
+                
+                const main = document.createElement('div');
+                main.className = 'transaction-main';
+                
+                const left = document.createElement('div');
+                left.textContent = (transaction.isCorrect ? '✓' : '✗') + ''  + transaction.changeOwed.toFixed(2) + ' change';
+                
+                const right = document.createElement('div');
+                right.textContent = 'Score: ' + transaction.score + ' | ' + formatTime(transaction.timeTaken);
+                
+                main.appendChild(left);
+                main.appendChild(right);
+                
+                const details = document.createElement('div');
+                details.className = 'transaction-details';
+                
+                const itemsText = transaction.selectedItems.map(item => { 
+                    item.type === 'bill' ? '' + item.value.toFixed(0) : '' + item.value.toFixed(2)
+                }).join(', ');
+                
+                const optimalItems = calculateOptimalItems(transaction.changeOwed);
+                const efficiency = Math.round((optimalItems / transaction.itemsUsed) * 100);
+                
+                details.textContent = 'Items: ' + itemsText + ' (' + transaction.itemsUsed + ' total) | Efficiency: ' + efficiency + '%';
+                
+                item.appendChild(main);
+                item.appendChild(details);
+                historyList.appendChild(item);
+            });
+        }
+
+        function checkAchievements() {
+            const achievements = gameState.achievements;
+            
+            // First Success
+            if (gameState.gamesCorrect >= 1 && !achievements['First Success']) {
+                achievements['First Success'] = true;
+            }
+            
+            // Speed Demon - Complete in under 10 seconds
+            if (gameState.transactions.length > 0) {
+                const lastTransaction = gameState.transactions[0];
+                if (lastTransaction.isCorrect && lastTransaction.timeTaken < 10 && !achievements['Speed Demon']) {
+                    achievements['Speed Demon'] = true;
+                }
+            }
+            
+            // Efficiency Expert - Use optimal number of items
+            if (gameState.transactions.length > 0) {
+                const lastTransaction = gameState.transactions[0];
+                if (lastTransaction.isCorrect) {
+                    const optimalItems = calculateOptimalItems(lastTransaction.changeOwed);
+                    if (lastTransaction.itemsUsed === optimalItems && !achievements['Efficiency Expert']) {
+                        achievements['Efficiency Expert'] = true;
+                    }
+                }
+            }
+            
+            // Streak Master - 5 correct in a row
+            if (gameState.currentStreak >= 5 && !achievements['Streak Master']) {
+                achievements['Streak Master'] = true;
+            }
+            
+            // Perfect Game - 10 correct in a row
+            if (gameState.currentStreak >= 10 && !achievements['Perfect Game']) {
+                achievements['Perfect Game'] = true;
+            }
+            
+            // Lightning Fast - Complete in under 5 seconds
+            if (gameState.transactions.length > 0) {
+                const lastTransaction = gameState.transactions[0];
+                if (lastTransaction.isCorrect && lastTransaction.timeTaken < 5 && !achievements['Lightning Fast']) {
+                    achievements['Lightning Fast'] = true;
+                }
+            }
+            
+            // Steady Hand - Consistent selection timing
+            if (gameState.transactions.length > 0) {
+                const lastTransaction = gameState.transactions[0];
+                if (lastTransaction.isCorrect && lastTransaction.selectionTimes.length > 2) {
+                    const intervals = [];
+                    for (let i = 1; i < lastTransaction.selectionTimes.length; i++) {
+                        intervals.push(lastTransaction.selectionTimes[i] - lastTransaction.selectionTimes[i - 1]);
+                    }
+                    const avgInterval = intervals.reduce((a, b) => a + b) / intervals.length;
+                    const variance = intervals.reduce((sum, interval) => sum + Math.pow(interval - avgInterval, 2), 0) / intervals.length;
+                    
+                    if (variance < 500000 && !achievements['Steady Hand']) { // Low variance in timing
+                        achievements['Steady Hand'] = true;
+                    }
+                }
+            }
+        }
+
+        function updateAchievements() {
+            const achievementsList = document.getElementById('achievements-list');
+            achievementsList.innerHTML = '';
+            
+            Object.entries(gameState.achievements).forEach(([name, unlocked]) => {
+                const achievement = document.createElement('div');
+                achievement.className = 'achievement ' + (unlocked ? 'achievement-unlocked' : 'achievement-locked');
+                achievement.textContent = (unlocked ? '✓ ' : '○ ') + name;
+                achievementsList.appendChild(achievement);
+            });
+        }
+
+        function resetStats() {
+            if (confirm('Are you sure you want to reset all statistics?')) {
+                gameState = {
+                    currentScore: 0,
+                    totalScore: 0,
+                    currentStreak: 0,
+                    bestStreak: 0,
+                    gamesPlayed: 0,
+                    gamesCorrect: 0,
+                    totalTime: 0,
+                    bestTime: Infinity,
+                    bestScore: 0,
+                    transactions: [],
+                    achievements: {
+                        'First Success': false,
+                        'Speed Demon': false,
+                        'Efficiency Expert': false,
+                        'Streak Master': false,
+                        'Perfect Game': false,
+                        'Lightning Fast': false,
+                        'Steady Hand': false
+                    }
+                };
+                
+                updateStatsDisplay();
+                updateHistoryDisplay();
+                updateAchievements();
+                
+                document.getElementById('status').textContent = 'Statistics reset! Click "NEW CUSTOMER" to start!';
+                document.getElementById('status').className = 'status';
+            }
+        }
+
+        // Initialize game on page load
+        window.onload = function() {
+            initGame();
+        };
+    </script>
+</body>
+</html>
